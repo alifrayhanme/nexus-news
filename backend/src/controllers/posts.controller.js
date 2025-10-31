@@ -94,29 +94,33 @@ async function getPostWithSearchParams(req, res) {
 
 async function getPost(req, res) {
     try {
+        console.log('Getting post with ID:', req.params.id);
         const result = await Post.findById(req.params.id).populate(
             "author",
             "name email picture_url"
         );
 
         if (!result) {
+            console.log('Post not found for ID:', req.params.id);
             return res.status(404).send({
                 ok: false,
-                message: "Something went wrong",
+                message: "Post not found",
                 error: "No Post Found",
                 errorType: "NotFound",
             });
         }
 
+        console.log('Post found:', result._id);
         res.status(200).send({
             ok: true,
             message: "Post found",
             data: result,
         });
     } catch (err) {
-        res.status(404).send({
+        console.error('Error getting post:', err);
+        res.status(500).send({
             ok: false,
-            message: "Something went wrong",
+            message: "Internal server error",
             error: err instanceof Error ? err.message : err,
             errorType: err instanceof Error ? err.name : "Error",
         });
@@ -125,20 +129,23 @@ async function getPost(req, res) {
 
 async function getCategories(_, res) {
     try {
+        console.log('Getting categories...');
         const categories = await Post.aggregate([
             { $group: { _id: "$category", posts: { $sum: 1 } } },
             { $project: { category: "$_id", posts: 1, _id: 0 } },
         ]);
 
+        console.log('Categories found:', categories.length);
         res.status(200).send({
             ok: true,
             message: "Categories found",
             data: categories,
         });
     } catch (err) {
-        res.status(404).send({
+        console.error('Error getting categories:', err);
+        res.status(500).send({
             ok: false,
-            message: "Something went wrong",
+            message: "Internal server error",
             error: err instanceof Error ? err.message : err,
             errorType: err instanceof Error ? err.name : "Error",
         });

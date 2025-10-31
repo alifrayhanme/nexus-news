@@ -28,7 +28,8 @@ if (!checkConnection()) {
 app.get("/", function (_, res) {
   res.send({
     ok: true,
-    message: "Home route",
+    message: "Nexus News API - Home route",
+    timestamp: new Date().toISOString(),
   });
 });
 
