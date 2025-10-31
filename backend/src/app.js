@@ -8,6 +8,9 @@ const { limiter, sanitizeInput } = require("./middlewares/security.middleware.js
 const mongoSanitize = require("./middlewares/mongoSanitize.js");
 const dotenv = require("dotenv");
 
+// Force database connection on startup
+process.env.NODE_ENV = 'production';
+
 dotenv.config({ path: join(__dirname, "..", ".env") });
 
 const PORT = process.env.PORT || 9000;
@@ -21,14 +24,22 @@ app.use(sanitizeInput);
 
 defaultMiddlewares(app);
 
-if (!checkConnection()) {
-  connectDB(process.env.MONGODB_URI);
-}
+// Always ensure database connection
+connectDB(process.env.MONGODB_URI || "mongodb+srv://ragibintiser_db_user:Qpi1TkcfJLQCbGO2@my-cluster.4as1rmr.mongodb.net/vortex_blog");
 
 app.get("/", function (_, res) {
   res.send({
     ok: true,
-    message: "Home route",
+    message: "Nexus News API is running",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get("/health", function (_, res) {
+  res.send({
+    ok: true,
+    message: "API Health Check",
+    database: require('mongoose').connection.readyState === 1 ? 'connected' : 'disconnected',
   });
 });
 
